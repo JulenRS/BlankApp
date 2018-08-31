@@ -2,15 +2,16 @@ package com.jross.blankapp.activities;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
@@ -22,12 +23,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.jross.blankapp.R;
 import com.jross.blankapp.adapters.AuthAdapter;
 import com.jross.blankapp.fragments.LogInFragment;
 import com.jross.blankapp.fragments.SignUpFragment;
-import com.jross.blankapp.utils.SharedPrefManager;
 import com.jross.blankapp.views.AnimatedViewPager;
 
 import butterknife.BindView;
@@ -40,8 +42,6 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
         SignUpFragment.OnFragmentInteractionListener {
 
     private static String TAG = "Authentication";
-    public SharedPrefManager sharedPrefManager;
-    private final Context mContext = this;
 
     @BindView(R.id.pager)
     AnimatedViewPager pager;
@@ -50,8 +50,11 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
     @BindView(R.id.logo)
     TextView txtLogo;
 
-    //defining firebaseauth object
     private FirebaseAuth mAuth;
+
+    private AuthAdapter adapter;
+
+    private Snackbar errorSnackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,13 +62,11 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        int[] screenSize = screenSize();
-
         //initializing firebase auth object
         mAuth = FirebaseAuth.getInstance();
 
         //if getCurrentUser does not returns null
-        if(mAuth.getCurrentUser() != null){
+        if (mAuth.getCurrentUser() != null) {
             //that means user is already logged in
             //so close this activity
             finish();
@@ -95,11 +96,12 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
                             set.start();
                         });
                         pager.post(() -> {
-                            AuthAdapter adapter = new AuthAdapter(getSupportFragmentManager(), pager, background, txtLogo);
+                            adapter = new AuthAdapter(getSupportFragmentManager(), pager, background, txtLogo);
                             pager.setAdapter(adapter);
                         });
                     }
                 });
+        buildSnackBar();
     }
 
     private int[] screenSize() {
@@ -111,13 +113,11 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
 
     @Override
     public void onLoginRequested(String email, String password) {
-        Toast.makeText(this, "Log in requested for email: " + email, Toast.LENGTH_LONG).show();
         logIn(email, password);
     }
 
     @Override
     public void onSignupRequested(String email, String password) {
-        Toast.makeText(this, email + " requested!", Toast.LENGTH_LONG).show();
         createAccount(email, password);
     }
 
@@ -127,24 +127,10 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "createUserWithEmail:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        // Save Data to SharedPreference
-                        sharedPrefManager = new SharedPrefManager(mContext);
-                        sharedPrefManager.saveIsLoggedIn(mContext, true);
-
-                        sharedPrefManager.saveEmail(mContext, email);
-                        sharedPrefManager.saveName(mContext, user.getDisplayName());
-                        sharedPrefManager.savePhoto(mContext, user.getPhotoUrl().toString());
-
-                        sharedPrefManager.saveToken(mContext, user.getIdToken(true).toString());
                         startActivity(new Intent(this, MainActivity.class));
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                        Toast.makeText(AuthenticationActivity.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();
                     }
-                });
+                })
+                .addOnFailureListener(e -> showError(e.getLocalizedMessage()));
     }
 
     private void logIn(String email, String password) {
@@ -153,24 +139,22 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d(TAG, "signInWithEmail:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        // Save Data to SharedPreference
-                        sharedPrefManager = new SharedPrefManager(mContext);
-                        sharedPrefManager.saveIsLoggedIn(mContext, true);
-
-                        sharedPrefManager.saveEmail(mContext, email);
-                        sharedPrefManager.saveName(mContext, user.getDisplayName());
-                        //sharedPrefManager.savePhoto(mContext, user.getPhotoUrl().toString());
-
-                        sharedPrefManager.saveToken(mContext, user.getIdToken(true).toString());
                         startActivity(new Intent(this, MainActivity.class));
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Log.w(TAG, "signInWithEmail:failure", task.getException());
-                        Toast.makeText(AuthenticationActivity.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();
                     }
-                });
+                })
+                .addOnFailureListener(e -> showError(e.getLocalizedMessage()));
+    }
+
+    private void showError(String errorMessage){
+        errorSnackbar.setText(errorMessage);
+        errorSnackbar.show();
+    }
+
+    private void buildSnackBar(){
+        errorSnackbar = errorSnackbar.make(findViewById(R.id.root), TAG, Snackbar.LENGTH_LONG);
+        errorSnackbar.setActionTextColor(Color.WHITE);
+        View snackBarView = errorSnackbar.getView();
+        snackBarView.setBackgroundColor(Color.RED);
     }
 
 }

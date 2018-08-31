@@ -21,6 +21,11 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.jross.blankapp.R;
 import com.jross.blankapp.adapters.MainListAdapter;
 import com.jross.blankapp.domains.Post;
@@ -37,6 +42,10 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Post> myList = new ArrayList<>();
 
     private RecyclerView mRecycler;
+    private DatabaseReference mDatabase;
+
+    private static final int TOTAL_ITEM_EACH_LOAD = 10;
+    private int currentPage = 0;
 
     private static String TAG = "MainActivity";
 
@@ -51,6 +60,8 @@ public class MainActivity extends AppCompatActivity
         //getting current user
         FirebaseUser user = firebaseAuth.getCurrentUser();
         Log.i(TAG, "onCreate: user is: " + user.getEmail());
+
+        mDatabase = FirebaseDatabase.getInstance().getReference("posts");
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,17 +82,19 @@ public class MainActivity extends AppCompatActivity
 
         mAdapter = new MainListAdapter(myList);
         mRecycler.setAdapter(mAdapter);
-        addDataToList(0);
+        //addDataToList(0);
 
         scrollListener = new ScrollListener(linearLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
                 //load next batch of items
-                addDataToList(totalItemsCount);
+                loadMoreData();
             }
         };
         // Adds the scroll listener to RecyclerView
         mRecycler.addOnScrollListener(scrollListener);
+
+        loadData();
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         View navHeader = navigationView.getHeaderView(0);
@@ -150,10 +163,40 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void addDataToList(int totalItemsCount) {
-        for (int i = totalItemsCount; i <= totalItemsCount + 30; i++) {
-            myList.add(new Post("Post " + i));
-        }
-        mRecycler.post(() -> mAdapter.notifyDataSetChanged());
+//    private void addDataToList(int totalItemsCount) {
+//        for (int i = totalItemsCount; i <= totalItemsCount + 30; i++) {
+//            myList.add(new Post("Post " + i, "asd"));
+//        }
+//        mRecycler.post(() -> mAdapter.notifyDataSetChanged());
+//    }
+
+    private void loadData() {
+        // example
+        // at first load : currentPage = 0 -> we startAt(0 * 10 = 0)
+        // at second load (first loadmore) : currentPage = 1 -> we startAt(1 * 10 = 10)
+        mDatabase.child("1")
+                .limitToFirst(TOTAL_ITEM_EACH_LOAD)
+                .startAt(currentPage*TOTAL_ITEM_EACH_LOAD)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if(!dataSnapshot.hasChildren()){
+                            Toast.makeText(MainActivity.this, "No more questions", Toast.LENGTH_SHORT).show();
+                            currentPage--;
+                        }
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+                            Log.d(TAG, "DATA FOUND!!"+data.toString());
+                            Post post = data.getValue(Post.class);
+                            myList.add(post);
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override public void onCancelled(DatabaseError databaseError) {}});
+    }
+
+    private void loadMoreData(){
+        currentPage++;
+        loadData();
     }
 }
