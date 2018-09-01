@@ -61,8 +61,6 @@ public class MainActivity extends AppCompatActivity
         FirebaseUser user = firebaseAuth.getCurrentUser();
         Log.i(TAG, "onCreate: user is: " + user.getEmail());
 
-        mDatabase = FirebaseDatabase.getInstance().getReference("posts");
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -174,29 +172,31 @@ public class MainActivity extends AppCompatActivity
         // example
         // at first load : currentPage = 0 -> we startAt(0 * 10 = 0)
         // at second load (first loadmore) : currentPage = 1 -> we startAt(1 * 10 = 10)
-        mDatabase.child("1")
-                .limitToFirst(TOTAL_ITEM_EACH_LOAD)
-                .startAt(currentPage*TOTAL_ITEM_EACH_LOAD)
-                .addValueEventListener(new ValueEventListener() {
+        mDatabase = FirebaseDatabase.getInstance().getReference("posts");
+        /*for (int i = 0; i < 10; i++) {
+            Post post = new Post("Hello World "+i+"!", "https://www.hbt-akademie.de/wp-content/uploads/2017/03/avatar-mini.png");
+            String postId = mDatabase.push().getKey();
+            mDatabase.child(postId).setValue(post);
+        }*/
+
+        mDatabase.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(!dataSnapshot.hasChildren()){
-                            Toast.makeText(MainActivity.this, "No more questions", Toast.LENGTH_SHORT).show();
-                            currentPage--;
-                        }
-                        for (DataSnapshot data : dataSnapshot.getChildren()) {
-                            Log.d(TAG, "DATA FOUND!!"+data.toString());
-                            Post post = data.getValue(Post.class);
+                        myList.clear();
+                        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                            Post post = postSnapshot.getValue(Post.class);
                             myList.add(post);
                             mAdapter.notifyDataSetChanged();
                         }
+                        //Post post = dataSnapshot.getValue(Post.class);
+                        //Log.d(TAG, "User name: " + post.getTitle() + ", email " + post.getPicUrl());
                     }
 
                     @Override public void onCancelled(DatabaseError databaseError) {}});
     }
 
     private void loadMoreData(){
-        currentPage++;
-        loadData();
+        //currentPage++;
+        //loadData();
     }
 }

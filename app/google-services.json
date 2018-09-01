@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "538541519591-f845nn1qgdmsvua4r66qte19ha0rebns.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jross.blankapp",
+            "certificate_hash": "b1dfe2b0e28e7056701f2338fa5fafec8b3af122"
+          }
+        },
+        {
           "client_id": "538541519591-21d6r893puusqgl00apebia0t9ebp9r4.apps.googleusercontent.com",
           "client_type": 3
         }

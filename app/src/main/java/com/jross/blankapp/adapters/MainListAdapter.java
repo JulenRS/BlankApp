@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,7 +33,7 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.Fireba
     @NonNull
     @Override
     public FirebasePostVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.firebase_post_vh, parent, false);
         return new FirebasePostVH(view);
     }
 
@@ -65,6 +66,7 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.Fireba
 
             Glide.with(mContext)
                     .load(post.getPicUrl())
+                    .apply(RequestOptions.centerCropTransform())
                     .into(postPic);
 
             postTitle.setText(post.getTitle());
