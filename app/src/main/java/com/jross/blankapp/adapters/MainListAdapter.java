@@ -4,11 +4,13 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -68,6 +70,13 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.Fireba
                     .load(post.getPicUrl())
                     .apply(RequestOptions.centerCropTransform())
                     .into(postPic);
+
+            mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i("HEYYY", "HOLAAAA");
+                }
+            });
 
             postTitle.setText(post.getTitle());
         }
