@@ -1,23 +1,15 @@
 package com.jross.blankapp.activities;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabItem;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -36,38 +28,30 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.jross.blankapp.R;
-import com.jross.blankapp.adapters.MainListAdapter;
 import com.jross.blankapp.adapters.PageAdapter;
 import com.jross.blankapp.domains.Post;
-import com.jross.blankapp.utils.ScrollListener;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int TOTAL_ITEM_EACH_LOAD = 10;
+    private static String TAG = "MainActivity";
     private FirebaseAuth firebaseAuth;
     private ArrayList<Post> myList = new ArrayList<>();
-
+    private ArrayList<Post> myList2 = new ArrayList<>();
     private ViewPager viewPager;
     private PageAdapter pageAdapter;
-
     private DatabaseReference mDatabase;
-
-    private OnAboutDataReceivedListener mAboutDataListener;
-
+    private OnAboutDataReceivedListenerClassic mAboutDataListener;
+    private OnAboutDataReceivedListenerSwipe mAboutDataListener2;
     private Toolbar toolbar;
     private TabLayout tabLayout;
-
     private TabItem tabClassic;
     private TabItem tabSwipe;
-
     private ImageView toolbarBackground;
-
-    private static final int TOTAL_ITEM_EACH_LOAD = 10;
     private int currentPage = 0;
-
-    private static String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -222,22 +206,55 @@ public class MainActivity extends AppCompatActivity
         }*/
 
         mDatabase.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        myList.clear();
-                        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                            Post post = postSnapshot.getValue(Post.class);
-                            myList.add(post);
-                            Log.i(TAG, "Size: "+postSnapshot.toString());
-                            //send the data to the fragment
-                        }
-                        mAboutDataListener.onDataReceived(myList);
-                    }
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                myList.clear();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Post post = postSnapshot.getValue(Post.class);
+                    myList.add(post);
+                    Log.i(TAG, "Size: " + postSnapshot.toString());
+                    //send the data to the fragment
+                }
+                mAboutDataListener.onDataReceived(myList);
+            }
 
-                    @Override public void onCancelled(DatabaseError databaseError) {}});
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
     }
 
-    private void loadMoreData(){
+    private void loadData2() {
+        // example
+        // at first load : currentPage = 0 -> we startAt(0 * 10 = 0)
+        // at second load (first loadmore) : currentPage = 1 -> we startAt(1 * 10 = 10)
+        mDatabase = FirebaseDatabase.getInstance().getReference("posts");
+        /*for (int i = 0; i < 10; i++) {
+            Post post = new Post("Hello World "+i+"!", "https://www.hbt-akademie.de/wp-content/uploads/2017/03/avatar-mini.png");
+            String postId = mDatabase.push().getKey();
+            mDatabase.child(postId).setValue(post);
+        }*/
+
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                myList2.clear();
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    Post post = postSnapshot.getValue(Post.class);
+                    myList2.add(post);
+                    Log.i(TAG, "Size: " + postSnapshot.toString());
+                    //send the data to the fragment
+                }
+                mAboutDataListener2.onDataReceived(myList2);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void loadMoreData() {
         //currentPage++;
         //loadData();
     }
@@ -246,12 +263,16 @@ public class MainActivity extends AppCompatActivity
         loadData();
     }
 
-    public interface OnAboutDataReceivedListener {
-        void onDataReceived(ArrayList<Post> myList);
+    public void onMoreData2() {
+        loadData2();
     }
 
-    public void setAboutDataListener(OnAboutDataReceivedListener listener) {
+    public void setAboutDataListener(OnAboutDataReceivedListenerClassic listener) {
         this.mAboutDataListener = listener;
+    }
+
+    public void setAboutDataListener2(OnAboutDataReceivedListenerSwipe listener2) {
+        this.mAboutDataListener2 = listener2;
     }
 
     @Override
@@ -259,7 +280,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (viewPager.getCurrentItem() == 0){
+        } else if (viewPager.getCurrentItem() == 0) {
             // If the user is currently looking at the first step, allow the system to handle the
             // Back button. This calls finish() on this activity and pops the back stack.
             super.onBackPressed();
@@ -269,5 +290,13 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+    }
+
+    public interface OnAboutDataReceivedListenerClassic {
+        void onDataReceived(ArrayList<Post> myList);
+    }
+
+    public interface OnAboutDataReceivedListenerSwipe {
+        void onDataReceived(ArrayList<Post> myList2);
     }
 }
