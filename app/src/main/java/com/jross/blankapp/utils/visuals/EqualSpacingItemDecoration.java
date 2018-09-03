@@ -1,4 +1,4 @@
-package com.jross.blankapp.utils;
+package com.jross.blankapp.utils.visuals;
 
 import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;

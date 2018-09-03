@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.jross.blankapp.R;
-import com.jross.blankapp.utils.TextSizeTransition;
+import com.jross.blankapp.utils.visuals.TextSizeTransition;
 import com.jross.blankapp.views.VerticalTextView;
 import com.transitionseverywhere.ChangeBounds;
 import com.transitionseverywhere.Rotate;
@@ -21,6 +21,8 @@ import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.TransitionSet;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
+
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,10 +48,10 @@ public abstract class AuthFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(authLayout(), container, false);
         ButterKnife.bind(this, root);
-        KeyboardVisibilityEvent.setEventListener(getActivity(), isOpen -> {
+        KeyboardVisibilityEvent.setEventListener(Objects.requireNonNull(getActivity()), isOpen -> {
             callback.scale(isOpen);
             if (!isOpen) {
                 clearFocus();
@@ -88,7 +90,7 @@ public abstract class AuthFragment extends Fragment {
             caption.post(() -> {
                 TransitionManager.beginDelayedTransition(parent, set);
                 caption.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.unfolded_size));
-                caption.setTextColor(ContextCompat.getColor(getContext(), R.color.color_label));
+                caption.setTextColor(ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.color_label));
                 caption.setTranslationX(0);
                 ConstraintLayout.LayoutParams params = getParams();
                 params.rightToRight = ConstraintLayout.LayoutParams.PARENT_ID;

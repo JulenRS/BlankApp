@@ -1,6 +1,8 @@
 package com.jross.blankapp.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
@@ -21,37 +23,50 @@ import com.jross.blankapp.utils.swipe.CardLayoutManager;
 import com.jross.blankapp.utils.swipe.OnSwipeListener;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class SwipeFragment extends Fragment implements MainActivity.OnAboutDataReceivedListenerSwipe{
 
-    private ArrayList<Post> myList = new ArrayList<>();
-    private RecyclerView mRecycler;
-    private SwipeAdapter mAdapter;
-
     private static String TAG = "SwipeFragment";
 
+    private ArrayList<Post> myList = new ArrayList<>();
+    private SwipeAdapter mAdapter;
+
+    @BindView(R.id.recyclerView) RecyclerView mRecycler;
+
+    public static SwipeFragment newInstance() {
+        SwipeFragment swipeFragment = new SwipeFragment();
+        Bundle args = new Bundle();
+        swipeFragment.setArguments(args);
+        return swipeFragment;
+    }
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ((MainActivity) Objects.requireNonNull(getActivity())).setAboutDataListener2(this);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         setHasOptionsMenu(true);
-
-        MainActivity mActivity = (MainActivity) getActivity();
-        mActivity.setAboutDataListener2(this);
-
         View myView = inflater.inflate(R.layout.fragment_swipe, container, false);
-
-        mRecycler = myView.findViewById(R.id.recyclerView);
-
+        ButterKnife.bind(this, myView);
         mRecycler.setItemAnimator(new DefaultItemAnimator());
         mAdapter = new SwipeAdapter(myList);
         mRecycler.setAdapter(mAdapter);
-
-        mActivity.onMoreData2();
-
-        CardItemTouchHelperCallback cardCallback = new CardItemTouchHelperCallback(mRecycler.getAdapter(), myList);
+        CardItemTouchHelperCallback<Post> cardCallback;
+        cardCallback = new CardItemTouchHelperCallback<>(mRecycler.getAdapter(), myList);
         cardCallback.setOnSwipedListener(new OnSwipeListener<Post>() {
-
             @Override
             public void onSwiping(RecyclerView.ViewHolder viewHolder, float ratio, int direction) {
                 SwipeAdapter.MyViewHolder myHolder = (SwipeAdapter.MyViewHolder) viewHolder;
@@ -65,7 +80,6 @@ public class SwipeFragment extends Fragment implements MainActivity.OnAboutDataR
                     myHolder.likeImageView.setAlpha(0f);
                 }
             }
-
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, Post o, int direction) {
                 SwipeAdapter.MyViewHolder myHolder = (SwipeAdapter.MyViewHolder) viewHolder;
@@ -74,25 +88,19 @@ public class SwipeFragment extends Fragment implements MainActivity.OnAboutDataR
                 myHolder.likeImageView.setAlpha(0f);
                 Toast.makeText(getActivity(), direction == CardConfig.SWIPED_LEFT ? "swiped left" : "swiped right", Toast.LENGTH_SHORT).show();
             }
-
             @Override
             public void onSwipedClear() {
                 Toast.makeText(getActivity(), "data clear", Toast.LENGTH_SHORT).show();
-                mRecycler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //initData();
-                        mRecycler.getAdapter().notifyDataSetChanged();
-                    }
+                mRecycler.postDelayed(() -> {
+                    mRecycler.getAdapter().notifyDataSetChanged();
                 }, 3000L);
             }
-
         });
         final ItemTouchHelper touchHelper = new ItemTouchHelper(cardCallback);
         final CardLayoutManager cardLayoutManager = new CardLayoutManager(mRecycler, touchHelper);
         mRecycler.setLayoutManager(cardLayoutManager);
         touchHelper.attachToRecyclerView(mRecycler);
-
+        ((MainActivity) Objects.requireNonNull(getActivity())).onMoreData2();
         return myView;
     }
 

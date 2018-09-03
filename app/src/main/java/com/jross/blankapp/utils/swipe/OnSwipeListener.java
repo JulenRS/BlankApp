@@ -10,7 +10,7 @@ public interface OnSwipeListener<T> {
 
     void onSwiped(RecyclerView.ViewHolder viewHolder, T t, int direction);
 
-    void onSwiped(RecyclerView.ViewHolder viewHolder, Post o, int direction);
+    //void onSwiped(RecyclerView.ViewHolder viewHolder, Post o, int direction);
 
     void onSwipedClear();
 

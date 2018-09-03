@@ -1,4 +1,4 @@
-package com.jross.blankapp.utils;
+package com.jross.blankapp.utils.visuals;
 
 
 /*

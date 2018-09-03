@@ -13,7 +13,6 @@ import com.jross.blankapp.R;
 public class VerticalTextView extends AppCompatTextView {
 
     private final Rect bounds = new Rect();
-    private int width, height;
     private boolean isVerticalText = false;
     private boolean topDown = false;
 
@@ -38,10 +37,9 @@ public class VerticalTextView extends AppCompatTextView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        // vise versa
         if (isVerticalText) {
-            height = getMeasuredWidth();
-            width = getMeasuredHeight();
+            int height = getMeasuredWidth();
+            int width = getMeasuredHeight();
             setMeasuredDimension(width, height);
         }
     }

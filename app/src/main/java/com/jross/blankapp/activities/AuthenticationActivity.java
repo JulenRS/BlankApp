@@ -3,7 +3,6 @@ package com.jross.blankapp.activities;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,14 +17,10 @@ import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.jross.blankapp.R;
 import com.jross.blankapp.adapters.AuthAdapter;
 import com.jross.blankapp.fragments.LogInFragment;
@@ -151,7 +146,7 @@ public class AuthenticationActivity extends AppCompatActivity implements LogInFr
     }
 
     private void buildSnackBar(){
-        errorSnackbar = errorSnackbar.make(findViewById(R.id.root), TAG, Snackbar.LENGTH_LONG);
+        errorSnackbar = Snackbar.make(findViewById(R.id.root), TAG, Snackbar.LENGTH_LONG);
         errorSnackbar.setActionTextColor(Color.WHITE);
         View snackBarView = errorSnackbar.getView();
         snackBarView.setBackgroundColor(Color.RED);

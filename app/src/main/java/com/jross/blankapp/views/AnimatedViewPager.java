@@ -32,7 +32,7 @@ public class AnimatedViewPager extends ViewPager {
             ScrollerCustomDuration mScroller = new ScrollerCustomDuration(getContext(),
                     new DecelerateInterpolator());
             scroller.set(this, mScroller);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 
@@ -41,6 +41,7 @@ public class AnimatedViewPager extends ViewPager {
         return false;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         return false;

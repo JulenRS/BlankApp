@@ -1,18 +1,17 @@
-package com.jross.blankapp.adapters;
+package com.jross.blankapp.adapters.viewpager;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.jross.blankapp.fragments.ClassicFragment;
 import com.jross.blankapp.fragments.SwipeFragment;
 
-public class PageAdapter extends FragmentStatePagerAdapter {
+public class MainPagerAdapter extends FragmentStatePagerAdapter {
 
     private int tabCount;
 
-    public PageAdapter(FragmentManager fm, int tabCount) {
+    public MainPagerAdapter(FragmentManager fm, int tabCount) {
         super(fm);
         this.tabCount = tabCount;
     }
@@ -21,9 +20,9 @@ public class PageAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new ClassicFragment();
+                return ClassicFragment.newInstance();
             case 1:
-                return new SwipeFragment();
+                return SwipeFragment.newInstance();
             default:
                 return null;
         }

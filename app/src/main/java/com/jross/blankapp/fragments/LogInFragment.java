@@ -4,35 +4,31 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.jross.blankapp.R;
 import com.jross.blankapp.adapters.TextWatcherAdapter;
-import com.jross.blankapp.utils.ConfirmFieldValidator;
-import com.jross.blankapp.utils.EmailFieldValidator;
-import com.jross.blankapp.utils.PasswordFieldValidator;
-import com.jross.blankapp.utils.RequiredFieldValidator;
-import com.jross.blankapp.utils.Rotate;
-import com.jross.blankapp.utils.TextSizeTransition;
+import com.jross.blankapp.utils.validation.EmailFieldValidator;
+import com.jross.blankapp.utils.validation.PasswordFieldValidator;
+import com.jross.blankapp.utils.visuals.Rotate;
+import com.jross.blankapp.utils.visuals.TextSizeTransition;
 import com.transitionseverywhere.ChangeBounds;
 import com.transitionseverywhere.Transition;
 import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.TransitionSet;
 
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -40,14 +36,8 @@ import butterknife.ButterKnife;
 
 public class LogInFragment extends AuthFragment implements View.OnClickListener, View.OnFocusChangeListener{
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private static final int PASS_MIN_LENGTH = 6;
 
@@ -63,10 +53,8 @@ public class LogInFragment extends AuthFragment implements View.OnClickListener,
     @BindView(R.id.password_input)
     TextInputLayout pswdLayout;
 
-    private RequiredFieldValidator mNameFieldValidator;
     private EmailFieldValidator mEmailFieldValidator;
     private PasswordFieldValidator mPasswordFieldValidator;
-    private ConfirmFieldValidator mConfirmFieldValidator;
 
     private OnFragmentInteractionListener mListener;
 
@@ -84,41 +72,35 @@ public class LogInFragment extends AuthFragment implements View.OnClickListener,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (view != null){
-            mEmailFieldValidator = new EmailFieldValidator(emailLayout);
-            mPasswordFieldValidator = new PasswordFieldValidator(pswdLayout, PASS_MIN_LENGTH);
-            caption.setText(getString(R.string.log_in_label));
-            caption.setOnClickListener(this);
-            view.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.color_log_in));
-            for (TextInputEditText editText : views) {
-                editText.setOnFocusChangeListener(this);
-                if (editText.getId() == R.id.password_input_edit) {
-                    final TextInputLayout inputLayout = ButterKnife.findById(view, R.id.password_input);
-                    Typeface boldTypeface = Typeface.defaultFromStyle(Typeface.BOLD);
-                    inputLayout.setTypeface(boldTypeface);
-                    editText.addTextChangedListener(new TextWatcherAdapter() {
-                        @Override
-                        public void afterTextChanged(Editable editable) {
-                            inputLayout.setPasswordVisibilityToggleEnabled(editable.length() > 0);
-                        }
-                    });
-                }
-                editText.setOnFocusChangeListener((temp, hasFocus) -> {
-                    if (!hasFocus) {
-                        boolean isEnabled = editText.getText().length() > 0;
-                        editText.setSelected(isEnabled);
+        mEmailFieldValidator = new EmailFieldValidator(emailLayout);
+        mPasswordFieldValidator = new PasswordFieldValidator(pswdLayout, PASS_MIN_LENGTH);
+        caption.setText(getString(R.string.log_in_label));
+        caption.setOnClickListener(this);
+        view.setBackgroundColor(ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.color_log_in));
+        for (TextInputEditText editText : views) {
+            editText.setOnFocusChangeListener(this);
+            if (editText.getId() == R.id.password_input_edit) {
+                final TextInputLayout inputLayout = ButterKnife.findById(view, R.id.password_input);
+                Typeface boldTypeface = Typeface.defaultFromStyle(Typeface.BOLD);
+                inputLayout.setTypeface(boldTypeface);
+                editText.addTextChangedListener(new TextWatcherAdapter() {
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        inputLayout.setPasswordVisibilityToggleEnabled(editable.length() > 0);
                     }
                 });
             }
+            editText.setOnFocusChangeListener((temp, hasFocus) -> {
+                if (!hasFocus) {
+                    boolean isEnabled = editText.getText().length() > 0;
+                    editText.setSelected(isEnabled);
+                }
+            });
         }
     }
 
@@ -146,7 +128,7 @@ public class LogInFragment extends AuthFragment implements View.OnClickListener,
         final float padding = getResources().getDimension(R.dimen.folded_label_padding) / 2;
         set.addListener(new Transition.TransitionListenerAdapter() {
             @Override
-            public void onTransitionEnd(Transition transition) {
+            public void onTransitionEnd(@NonNull Transition transition) {
                 super.onTransitionEnd(transition);
                 caption.setTranslationX(-padding);
                 caption.setRotation(0);
@@ -232,9 +214,6 @@ public class LogInFragment extends AuthFragment implements View.OnClickListener,
     }
 
     private boolean validateForm(){
-        if (mEmailFieldValidator.validate(emailInput.getText().toString()) && mPasswordFieldValidator.validate(pswdInput.getText().toString())){
-            return true;
-        }
-        return false;
+        return mEmailFieldValidator.validate(emailInput.getText().toString()) && mPasswordFieldValidator.validate(pswdInput.getText().toString());
     }
 }

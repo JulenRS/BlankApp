@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputEditText;
@@ -13,18 +14,18 @@ import android.text.Editable;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.jross.blankapp.R;
 import com.jross.blankapp.adapters.TextWatcherAdapter;
-import com.jross.blankapp.utils.Rotate;
-import com.jross.blankapp.utils.TextSizeTransition;
+import com.jross.blankapp.utils.visuals.Rotate;
+import com.jross.blankapp.utils.visuals.TextSizeTransition;
 import com.transitionseverywhere.ChangeBounds;
 import com.transitionseverywhere.Transition;
 import com.transitionseverywhere.TransitionManager;
 import com.transitionseverywhere.TransitionSet;
 
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.BindViews;
@@ -33,14 +34,8 @@ import butterknife.ButterKnife;
 
 public class SignUpFragment extends AuthFragment implements View.OnClickListener{
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     @BindViews(value = {R.id.email_input_edit,
             R.id.password_input_edit,
@@ -68,45 +63,39 @@ public class SignUpFragment extends AuthFragment implements View.OnClickListener
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (view != null) {
-            view.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.color_sign_up));
-            caption.setText(getString(R.string.sign_up_label));
-            caption.setTag("Register");
-            caption.setOnClickListener(this);
-            for (TextInputEditText editText : views) {
-                if (editText.getId() == R.id.password_input_edit) {
-                    final TextInputLayout inputLayout = ButterKnife.findById(view, R.id.password_input);
-                    final TextInputLayout confirmLayout = ButterKnife.findById(view, R.id.confirm_password);
-                    Typeface boldTypeface = Typeface.defaultFromStyle(Typeface.BOLD);
-                    inputLayout.setTypeface(boldTypeface);
-                    confirmLayout.setTypeface(boldTypeface);
-                    editText.addTextChangedListener(new TextWatcherAdapter() {
-                        @Override
-                        public void afterTextChanged(Editable editable) {
-                            inputLayout.setPasswordVisibilityToggleEnabled(editable.length() > 0);
-                        }
-                    });
-                }
-                editText.setOnFocusChangeListener((temp, hasFocus) -> {
-                    if (!hasFocus) {
-                        boolean isEnabled = editText.getText().length() > 0;
-                        editText.setSelected(isEnabled);
+        view.setBackgroundColor(ContextCompat.getColor(Objects.requireNonNull(getContext()), R.color.color_sign_up));
+        caption.setText(getString(R.string.sign_up_label));
+        caption.setTag("Register");
+        caption.setOnClickListener(this);
+        for (TextInputEditText editText : views) {
+            if (editText.getId() == R.id.password_input_edit) {
+                final TextInputLayout inputLayout = ButterKnife.findById(view, R.id.password_input);
+                final TextInputLayout confirmLayout = ButterKnife.findById(view, R.id.confirm_password);
+                Typeface boldTypeface = Typeface.defaultFromStyle(Typeface.BOLD);
+                inputLayout.setTypeface(boldTypeface);
+                confirmLayout.setTypeface(boldTypeface);
+                editText.addTextChangedListener(new TextWatcherAdapter() {
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        inputLayout.setPasswordVisibilityToggleEnabled(editable.length() > 0);
                     }
                 });
             }
-            caption.setVerticalText(true);
-            foldStuff();
-            caption.setTranslationX(getTextPadding());
+            editText.setOnFocusChangeListener((temp, hasFocus) -> {
+                if (!hasFocus) {
+                    boolean isEnabled = editText.getText().length() > 0;
+                    editText.setSelected(isEnabled);
+                }
+            });
         }
+        caption.setVerticalText(true);
+        foldStuff();
+        caption.setTranslationX(getTextPadding());
     }
 
     @Override
@@ -136,7 +125,7 @@ public class SignUpFragment extends AuthFragment implements View.OnClickListener
         set.setOrdering(TransitionSet.ORDERING_TOGETHER);
         set.addListener(new Transition.TransitionListenerAdapter() {
             @Override
-            public void onTransitionEnd(Transition transition) {
+            public void onTransitionEnd(@NonNull Transition transition) {
                 super.onTransitionEnd(transition);
                 caption.setTranslationX(getTextPadding());
                 caption.setRotation(0);
